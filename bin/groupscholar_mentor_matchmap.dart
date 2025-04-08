@@ -10,6 +10,7 @@ void main(List<String> arguments) async {
     ..addCommand('seed')
     ..addCommand('suggest')
     ..addCommand('record')
+    ..addCommand('report')
     ..addFlag('help', abbr: 'h', negatable: false);
 
   final argResults = parser.parse(arguments);
@@ -34,8 +35,13 @@ void main(List<String> arguments) async {
         await db.createTables(connection);
         final mentors = await db.fetchMentors(connection);
         final scholars = await db.fetchScholars(connection);
+        final mentorCounts = await db.fetchMentorDecisionCounts(connection);
         final engine = MatchEngine();
-        final suggestions = engine.suggest(mentors: mentors, scholars: scholars);
+        final suggestions = engine.suggest(
+          mentors: mentors,
+          scholars: scholars,
+          mentorDecisionCounts: mentorCounts,
+        );
 
         if (suggestions.isEmpty) {
           stdout.writeln('No suggestions available.');
@@ -57,8 +63,13 @@ void main(List<String> arguments) async {
         await db.createTables(connection);
         final mentors = await db.fetchMentors(connection);
         final scholars = await db.fetchScholars(connection);
+        final mentorCounts = await db.fetchMentorDecisionCounts(connection);
         final engine = MatchEngine();
-        final suggestions = engine.suggest(mentors: mentors, scholars: scholars);
+        final suggestions = engine.suggest(
+          mentors: mentors,
+          scholars: scholars,
+          mentorDecisionCounts: mentorCounts,
+        );
 
         if (suggestions.isEmpty) {
           stdout.writeln('No suggestions to record.');
@@ -70,6 +81,35 @@ void main(List<String> arguments) async {
         }
 
         stdout.writeln('Recorded ${suggestions.length} match decisions.');
+      });
+      break;
+    case 'report':
+      await db.withConnection((connection) async {
+        await db.createTables(connection);
+        final utilization = await db.fetchMentorUtilization(connection);
+        stdout.writeln('Mentor capacity report');
+        stdout.writeln('');
+        for (final entry in utilization) {
+          stdout.writeln(
+            '${entry.mentor.name} (${entry.mentor.region}) '
+            '- ${entry.matchedCount}/${entry.mentor.capacity} matched '
+            '(${entry.remainingCapacity} remaining)',
+          );
+        }
+        stdout.writeln('');
+        final recent = await db.fetchRecentDecisions(connection);
+        if (recent.isEmpty) {
+          stdout.writeln('No match decisions recorded yet.');
+          return;
+        }
+        stdout.writeln('Recent decisions');
+        for (final decision in recent) {
+          stdout.writeln(
+            '${decision.scholarName} -> ${decision.mentorName} '
+            '| score ${decision.score.toStringAsFixed(1)} '
+            '| ${decision.decidedAt.toIso8601String()}',
+          );
+        }
       });
       break;
     default:
@@ -86,6 +126,7 @@ void _printUsage(ArgParser parser) {
   stdout.writeln('  seed     Create tables and seed mentors/scholars.');
   stdout.writeln('  suggest  Generate mentor match suggestions.');
   stdout.writeln('  record   Persist current suggestions as decisions.');
+  stdout.writeln('  report   Show mentor capacity and recent decisions.');
   stdout.writeln('');
   stdout.writeln('Environment variables:');
   stdout.writeln('  PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD');

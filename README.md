@@ -4,8 +4,9 @@ Mentor Matchmap is a Dart CLI that helps Group Scholar staff match scholars with
 
 ## Features
 - Seed mentors and scholars with realistic starter data
-- Generate ranked match suggestions with clear reasoning
+- Generate ranked match suggestions with clear reasoning and capacity checks
 - Record match decisions into PostgreSQL for future review
+- Report mentor capacity usage and recent match decisions
 - Uses per-project schema isolation to avoid conflicts
 
 ## Tech Stack
@@ -48,6 +49,12 @@ Record the suggested matches:
 
 ```bash
 dart run bin/groupscholar_mentor_matchmap.dart record
+```
+
+View a capacity report:
+
+```bash
+dart run bin/groupscholar_mentor_matchmap.dart report
 ```
 
 ## Testing

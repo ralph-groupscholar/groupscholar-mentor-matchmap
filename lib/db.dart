@@ -217,6 +217,82 @@ class DbClient {
         .toList();
   }
 
+  Future<Map<int, int>> fetchMentorDecisionCounts(Connection connection) async {
+    final rows = await connection.execute(
+      'SELECT mentor_id, COUNT(*) FROM ${config.schema}.match_decisions GROUP BY mentor_id',
+    );
+
+    final counts = <int, int>{};
+    for (final row in rows) {
+      counts[row[0] as int] = (row[1] as int);
+    }
+
+    return counts;
+  }
+
+  Future<List<MentorUtilization>> fetchMentorUtilization(
+    Connection connection,
+  ) async {
+    final rows = await connection.execute('''
+      SELECT m.id,
+             m.name,
+             m.email,
+             m.region,
+             m.capacity,
+             m.tags,
+             COALESCE(COUNT(d.id), 0) AS matched_count
+      FROM ${config.schema}.mentors m
+      LEFT JOIN ${config.schema}.match_decisions d ON d.mentor_id = m.id
+      GROUP BY m.id
+      ORDER BY m.id
+    ''');
+
+    return rows.map((row) {
+      final capacity = row[4] as int;
+      final matchedCount = (row[6] as int);
+      return MentorUtilization(
+        mentor: Mentor(
+          id: row[0] as int,
+          name: row[1] as String,
+          email: row[2] as String,
+          region: row[3] as String,
+          capacity: capacity,
+          tags: (row[5] as List<dynamic>).cast<String>(),
+        ),
+        matchedCount: matchedCount,
+        remainingCapacity: capacity - matchedCount,
+      );
+    }).toList();
+  }
+
+  Future<List<DecisionSummary>> fetchRecentDecisions(
+    Connection connection, {
+    int limit = 5,
+  }) async {
+    final rows = await connection.execute(
+      Sql.named('''
+        SELECT m.name, s.name, d.score, d.decided_at
+        FROM ${config.schema}.match_decisions d
+        JOIN ${config.schema}.mentors m ON m.id = d.mentor_id
+        JOIN ${config.schema}.scholars s ON s.id = d.scholar_id
+        ORDER BY d.decided_at DESC
+        LIMIT @limit
+      '''),
+      parameters: {'limit': limit},
+    );
+
+    return rows
+        .map(
+          (row) => DecisionSummary(
+            mentorName: row[0] as String,
+            scholarName: row[1] as String,
+            score: (row[2] as num).toDouble(),
+            decidedAt: row[3] as DateTime,
+          ),
+        )
+        .toList();
+  }
+
   Future<void> recordDecision(
     Connection connection,
     MatchSuggestion suggestion,

@@ -4,12 +4,22 @@ class MatchEngine {
   List<MatchSuggestion> suggest({
     required List<Mentor> mentors,
     required List<Scholar> scholars,
+    Map<int, int> mentorDecisionCounts = const {},
   }) {
     final suggestions = <MatchSuggestion>[];
 
     for (final scholar in scholars) {
-      final ranked = mentors
-          .map((mentor) => _score(mentor, scholar))
+      final availableMentors = mentors.where((mentor) {
+        final used = mentorDecisionCounts[mentor.id] ?? 0;
+        return mentor.capacity - used > 0;
+      }).toList();
+
+      final ranked = availableMentors
+          .map((mentor) {
+            final used = mentorDecisionCounts[mentor.id] ?? 0;
+            final remaining = mentor.capacity - used;
+            return _score(mentor, scholar, remaining);
+          })
           .toList()
         ..sort((a, b) => b.score.compareTo(a.score));
 
@@ -21,7 +31,7 @@ class MatchEngine {
     return suggestions;
   }
 
-  MatchSuggestion _score(Mentor mentor, Scholar scholar) {
+  MatchSuggestion _score(Mentor mentor, Scholar scholar, int remainingCapacity) {
     double score = 0;
     final reasons = <String>[];
 
@@ -36,9 +46,9 @@ class MatchEngine {
       reasons.add('Same region (${mentor.region})');
     }
 
-    if (mentor.capacity > 0) {
+    if (remainingCapacity > 0) {
       score += 1;
-      reasons.add('Mentor capacity available');
+      reasons.add('Mentor capacity available ($remainingCapacity slots)');
     }
 
     if (reasons.isEmpty) {

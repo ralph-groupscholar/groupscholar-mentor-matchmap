@@ -45,3 +45,29 @@ class MatchSuggestion {
   final double score;
   final List<String> reasons;
 }
+
+class MentorUtilization {
+  MentorUtilization({
+    required this.mentor,
+    required this.matchedCount,
+    required this.remainingCapacity,
+  });
+
+  final Mentor mentor;
+  final int matchedCount;
+  final int remainingCapacity;
+}
+
+class DecisionSummary {
+  DecisionSummary({
+    required this.mentorName,
+    required this.scholarName,
+    required this.score,
+    required this.decidedAt,
+  });
+
+  final String mentorName;
+  final String scholarName;
+  final double score;
+  final DateTime decidedAt;
+}
