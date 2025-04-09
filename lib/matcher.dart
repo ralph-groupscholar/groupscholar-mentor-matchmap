@@ -7,28 +7,54 @@ class MatchEngine {
     Map<int, int> mentorDecisionCounts = const {},
   }) {
     final suggestions = <MatchSuggestion>[];
+    final remainingCapacity = <int, int>{};
+
+    for (final mentor in mentors) {
+      final used = mentorDecisionCounts[mentor.id] ?? 0;
+      remainingCapacity[mentor.id] = mentor.capacity - used;
+    }
 
     for (final scholar in scholars) {
-      final availableMentors = mentors.where((mentor) {
-        final used = mentorDecisionCounts[mentor.id] ?? 0;
-        return mentor.capacity - used > 0;
-      }).toList();
-
-      final ranked = availableMentors
-          .map((mentor) {
-            final used = mentorDecisionCounts[mentor.id] ?? 0;
-            final remaining = mentor.capacity - used;
-            return _score(mentor, scholar, remaining);
-          })
-          .toList()
-        ..sort((a, b) => b.score.compareTo(a.score));
+      final ranked = rankMentorsForScholar(
+        mentors: mentors,
+        scholar: scholar,
+        mentorDecisionCounts: mentorDecisionCounts,
+        remainingCapacityOverrides: remainingCapacity,
+      );
 
       if (ranked.isNotEmpty) {
-        suggestions.add(ranked.first);
+        final top = ranked.first;
+        suggestions.add(top);
+        final currentRemaining = remainingCapacity[top.mentor.id] ?? 0;
+        remainingCapacity[top.mentor.id] = currentRemaining - 1;
       }
     }
 
     return suggestions;
+  }
+
+  List<MatchSuggestion> rankMentorsForScholar({
+    required List<Mentor> mentors,
+    required Scholar scholar,
+    Map<int, int> mentorDecisionCounts = const {},
+    Map<int, int>? remainingCapacityOverrides,
+  }) {
+    final availableMentors = mentors.where((mentor) {
+      final remaining = remainingCapacityOverrides?[mentor.id] ??
+          (mentor.capacity - (mentorDecisionCounts[mentor.id] ?? 0));
+      return remaining > 0;
+    }).toList();
+
+    final ranked = availableMentors
+        .map((mentor) {
+          final remaining = remainingCapacityOverrides?[mentor.id] ??
+              (mentor.capacity - (mentorDecisionCounts[mentor.id] ?? 0));
+          return _score(mentor, scholar, remaining);
+        })
+        .toList()
+      ..sort((a, b) => b.score.compareTo(a.score));
+
+    return ranked;
   }
 
   MatchSuggestion _score(Mentor mentor, Scholar scholar, int remainingCapacity) {

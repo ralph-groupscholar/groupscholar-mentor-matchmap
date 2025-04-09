@@ -46,6 +46,16 @@ class MatchSuggestion {
   final List<String> reasons;
 }
 
+class ScholarMatchRank {
+  ScholarMatchRank({
+    required this.scholar,
+    required this.matches,
+  });
+
+  final Scholar scholar;
+  final List<MatchSuggestion> matches;
+}
+
 class MentorUtilization {
   MentorUtilization({
     required this.mentor,

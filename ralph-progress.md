@@ -7,3 +7,7 @@
 - Added tests and documentation for local usage.
 - Added mentor capacity-aware matching plus a capacity report command.
 - Logged recent decision summaries and expanded tests/docs.
+- Added a coverage report for tag gaps and regional capacity balance.
+- Added coverage report tests and updated CLI/README/CHANGELOG.
+- Added a gap report to flag scholars with low-scoring or missing matches.
+- Added per-scholar ranking helper and tests for sorted scoring.
