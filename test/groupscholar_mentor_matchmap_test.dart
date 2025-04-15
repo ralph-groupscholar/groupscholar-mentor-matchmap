@@ -213,4 +213,46 @@ void main() {
     expect(south.scholarDemand, 1);
     expect(south.remainingCapacity, 0);
   });
+
+  test('buildScholarScorecards respects top and min score', () {
+    final mentors = [
+      Mentor(
+        id: 1,
+        name: 'Mentor A',
+        email: 'a@mentor.org',
+        region: 'West',
+        capacity: 1,
+        tags: ['stem', 'internships'],
+      ),
+      Mentor(
+        id: 2,
+        name: 'Mentor B',
+        email: 'b@mentor.org',
+        region: 'South',
+        capacity: 1,
+        tags: ['arts'],
+      ),
+    ];
+
+    final scholars = [
+      Scholar(
+        id: 10,
+        name: 'Scholar X',
+        email: 'x@scholar.org',
+        region: 'West',
+        tags: ['stem', 'research'],
+      ),
+    ];
+
+    final scorecards = buildScholarScorecards(
+      mentors: mentors,
+      scholars: scholars,
+      topN: 1,
+      minScore: 7,
+    );
+
+    expect(scorecards, hasLength(1));
+    expect(scorecards.first.rankedSuggestions, hasLength(1));
+    expect(scorecards.first.belowThreshold, isTrue);
+  });
 }

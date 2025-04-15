@@ -11,3 +11,5 @@
 - Added coverage report tests and updated CLI/README/CHANGELOG.
 - Added a gap report to flag scholars with low-scoring or missing matches.
 - Added per-scholar ranking helper and tests for sorted scoring.
+- Ensured batch suggestions respect remaining mentor capacity and added tests.
+- Added scorecard reporting to summarize top mentor options with thresholds.

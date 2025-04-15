@@ -9,6 +9,7 @@ Mentor Matchmap is a Dart CLI that helps Group Scholar staff match scholars with
 - Report mentor capacity usage and recent match decisions
 - Flag scholars with low-scoring or missing matches
 - Surface tag gaps and regional capacity imbalances
+- Generate per-scholar scorecards with top mentor options
 - Uses per-project schema isolation to avoid conflicts
 
 ## Tech Stack
@@ -69,6 +70,12 @@ Review tag and region coverage:
 
 ```bash
 dart run bin/groupscholar_mentor_matchmap.dart coverage
+```
+
+Generate scorecards:
+
+```bash
+dart run bin/groupscholar_mentor_matchmap.dart scorecard --top 3 --min-score 3
 ```
 
 ## Testing
