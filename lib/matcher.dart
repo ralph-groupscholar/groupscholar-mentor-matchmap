@@ -6,7 +6,21 @@ class MatchEngine {
     required List<Scholar> scholars,
     Map<int, int> mentorDecisionCounts = const {},
   }) {
+    final plan = buildPlan(
+      mentors: mentors,
+      scholars: scholars,
+      mentorDecisionCounts: mentorDecisionCounts,
+    );
+    return plan.suggestions;
+  }
+
+  MatchPlan buildPlan({
+    required List<Mentor> mentors,
+    required List<Scholar> scholars,
+    Map<int, int> mentorDecisionCounts = const {},
+  }) {
     final suggestions = <MatchSuggestion>[];
+    final unassigned = <Scholar>[];
     final remainingCapacity = <int, int>{};
 
     for (final mentor in mentors) {
@@ -22,15 +36,21 @@ class MatchEngine {
         remainingCapacityOverrides: remainingCapacity,
       );
 
-      if (ranked.isNotEmpty) {
-        final top = ranked.first;
-        suggestions.add(top);
-        final currentRemaining = remainingCapacity[top.mentor.id] ?? 0;
-        remainingCapacity[top.mentor.id] = currentRemaining - 1;
+      if (ranked.isEmpty) {
+        unassigned.add(scholar);
+        continue;
       }
+
+      final top = ranked.first;
+      suggestions.add(top);
+      final currentRemaining = remainingCapacity[top.mentor.id] ?? 0;
+      remainingCapacity[top.mentor.id] = currentRemaining - 1;
     }
 
-    return suggestions;
+    return MatchPlan(
+      suggestions: suggestions,
+      unassignedScholars: unassigned,
+    );
   }
 
   List<MatchSuggestion> rankMentorsForScholar({

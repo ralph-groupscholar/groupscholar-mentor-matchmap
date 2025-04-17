@@ -13,3 +13,4 @@
 - Added per-scholar ranking helper and tests for sorted scoring.
 - Ensured batch suggestions respect remaining mentor capacity and added tests.
 - Added scorecard reporting to summarize top mentor options with thresholds.
+- Added match planning output to surface unassigned scholars and expanded tests.

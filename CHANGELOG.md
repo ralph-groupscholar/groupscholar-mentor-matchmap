@@ -14,12 +14,12 @@
 
 ## 1.3.0
 
-- Balanced batch suggestions against remaining mentor capacity.
-
-## 1.3.0
-
 - Added coverage report for tag gaps and regional capacity balance.
 
 ## 1.4.0
 
 - Added per-scholar scorecard reporting with configurable thresholds.
+
+## 1.5.0
+
+- Added match planning output that tracks unassigned scholars.

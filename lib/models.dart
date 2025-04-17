@@ -46,6 +46,16 @@ class MatchSuggestion {
   final List<String> reasons;
 }
 
+class MatchPlan {
+  MatchPlan({
+    required this.suggestions,
+    required this.unassignedScholars,
+  });
+
+  final List<MatchSuggestion> suggestions;
+  final List<Scholar> unassignedScholars;
+}
+
 class ScholarMatchRank {
   ScholarMatchRank({
     required this.scholar,

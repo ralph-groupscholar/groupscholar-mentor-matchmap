@@ -170,6 +170,46 @@ void main() {
     expect(suggestions.last.mentor.id, 2);
   });
 
+  test('buildPlan tracks scholars without available mentors', () {
+    final mentors = [
+      Mentor(
+        id: 1,
+        name: 'Mentor A',
+        email: 'a@mentor.org',
+        region: 'West',
+        capacity: 1,
+        tags: ['stem'],
+      ),
+    ];
+
+    final scholars = [
+      Scholar(
+        id: 10,
+        name: 'Scholar X',
+        email: 'x@scholar.org',
+        region: 'West',
+        tags: ['stem'],
+      ),
+      Scholar(
+        id: 11,
+        name: 'Scholar Y',
+        email: 'y@scholar.org',
+        region: 'West',
+        tags: ['stem'],
+      ),
+    ];
+
+    final engine = MatchEngine();
+    final plan = engine.buildPlan(
+      mentors: mentors,
+      scholars: scholars,
+    );
+
+    expect(plan.suggestions, hasLength(1));
+    expect(plan.unassignedScholars, hasLength(1));
+    expect(plan.unassignedScholars.first.id, 11);
+  });
+
   test('coverage report highlights missing tags and region gaps', () {
     final mentors = [
       Mentor(

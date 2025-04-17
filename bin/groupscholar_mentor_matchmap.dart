@@ -47,23 +47,38 @@ void main(List<String> arguments) async {
         final scholars = await db.fetchScholars(connection);
         final mentorCounts = await db.fetchMentorDecisionCounts(connection);
         final engine = MatchEngine();
-        final suggestions = engine.suggest(
+        final plan = engine.buildPlan(
           mentors: mentors,
           scholars: scholars,
           mentorDecisionCounts: mentorCounts,
         );
 
-        if (suggestions.isEmpty) {
+        if (plan.suggestions.isEmpty) {
           stdout.writeln('No suggestions available.');
+          if (plan.unassignedScholars.isNotEmpty) {
+            stdout.writeln('');
+            stdout.writeln('Unassigned scholars');
+            for (final scholar in plan.unassignedScholars) {
+              stdout.writeln('  - ${scholar.name} (${scholar.region})');
+            }
+          }
           return;
         }
 
-        for (final suggestion in suggestions) {
+        for (final suggestion in plan.suggestions) {
           stdout.writeln(
             '${suggestion.scholar.name} -> ${suggestion.mentor.name} | score ${suggestion.score.toStringAsFixed(1)}',
           );
           for (final reason in suggestion.reasons) {
             stdout.writeln('  - $reason');
+          }
+        }
+
+        if (plan.unassignedScholars.isNotEmpty) {
+          stdout.writeln('');
+          stdout.writeln('Unassigned scholars');
+          for (final scholar in plan.unassignedScholars) {
+            stdout.writeln('  - ${scholar.name} (${scholar.region})');
           }
         }
       });
@@ -75,22 +90,34 @@ void main(List<String> arguments) async {
         final scholars = await db.fetchScholars(connection);
         final mentorCounts = await db.fetchMentorDecisionCounts(connection);
         final engine = MatchEngine();
-        final suggestions = engine.suggest(
+        final plan = engine.buildPlan(
           mentors: mentors,
           scholars: scholars,
           mentorDecisionCounts: mentorCounts,
         );
 
-        if (suggestions.isEmpty) {
+        if (plan.suggestions.isEmpty) {
           stdout.writeln('No suggestions to record.');
+          if (plan.unassignedScholars.isNotEmpty) {
+            stdout.writeln('Unassigned scholars:');
+            for (final scholar in plan.unassignedScholars) {
+              stdout.writeln('  - ${scholar.name} (${scholar.region})');
+            }
+          }
           return;
         }
 
-        for (final suggestion in suggestions) {
+        for (final suggestion in plan.suggestions) {
           await db.recordDecision(connection, suggestion);
         }
 
-        stdout.writeln('Recorded ${suggestions.length} match decisions.');
+        stdout.writeln('Recorded ${plan.suggestions.length} match decisions.');
+        if (plan.unassignedScholars.isNotEmpty) {
+          stdout.writeln('Unassigned scholars:');
+          for (final scholar in plan.unassignedScholars) {
+            stdout.writeln('  - ${scholar.name} (${scholar.region})');
+          }
+        }
       });
       break;
     case 'report':
